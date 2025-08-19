@@ -1,3 +1,4 @@
 python -m venv venv
 venv\Scripts\activate
 npm start
+postgresql://nanoconnect_db_user:vyZmfhweVcAlYbNlR2TPZRwFs0jLFjK2@dpg-d2idsure5dus73a8c9cg-a/nanoconnect_db
