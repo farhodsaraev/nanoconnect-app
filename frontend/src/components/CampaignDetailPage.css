@@ -1,0 +1,162 @@
+.campaign-detail-page {
+  padding: 40px;
+  max-width: 1100px;
+  margin: auto;
+}
+
+.campaign-detail-header {
+  border-bottom: 1px solid #eee;
+  padding-bottom: 20px;
+  margin-bottom: 30px;
+}
+
+.campaign-detail-header h1 {
+  margin: 0;
+  margin-bottom: 10px;
+}
+
+.campaign-brief-display {
+  background-color: #f9f9f9;
+  padding: 15px;
+  border-radius: 6px;
+  color: #333;
+  line-height: 1.6;
+}
+
+.invites-section h2 {
+  font-size: 1.5rem;
+}
+
+.invites-list {
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  overflow: hidden; /* To make border-radius work on the table-like divs */
+}
+
+.invite-item {
+  display: grid;
+  grid-template-columns: 3fr 1fr 3fr;
+  align-items: center;
+  padding: 15px 20px;
+  border-bottom: 1px solid #ddd;
+}
+
+.invite-item:last-child {
+  border-bottom: none;
+}
+
+.invite-header {
+  background-color: #f8f9fa;
+  font-weight: 600;
+  color: #333;
+}
+
+.invite-name {
+  font-weight: 500;
+}
+
+.invite-status span {
+  padding: 5px 12px;
+  border-radius: 15px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: capitalize;
+}
+
+/* Status-specific colors */
+.status-pending { background-color: #fff3cd; color: #856404; }
+.status-accepted { background-color: #d4edda; color: #155724; }
+.status-declined { background-color: #f8d7da; color: #721c24; }
+
+.invite-submission a {
+  color: #007bff;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.invite-submission a:hover {
+  text-decoration: underline;
+}
+
+.campaign-title-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.campaign-title-actions h1 {
+  margin: 0;
+}
+
+/* We can reuse the button style from the Dashboard */
+.find-influencers-button {
+  background-color: #17a2b8;
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  text-decoration: none;
+  transition: background-color 0.2s;
+}
+
+.find-influencers-button:hover {
+  background-color: #138496;
+}
+
+/* --- Styles for the new Application Review section --- */
+.applications-section {
+  margin-top: 40px; /* Add some space above this new section */
+}
+
+.application-actions button {
+  padding: 6px 15px;
+  border: none;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  margin-left: 10px;
+}
+
+.approve-button {
+  background-color: #28a745;
+  color: white;
+}
+.approve-button:hover {
+  background-color: #218838;
+}
+
+.reject-button {
+  background-color: #dc3545;
+  color: white;
+}
+.reject-button:hover {
+  background-color: #c82333;
+}
+
+.application-status-text {
+  font-weight: bold;
+  text-transform: capitalize;
+}
+
+/* --- Styles for Submission Review --- */
+.submission-actions button {
+  padding: 6px 15px;
+  border: none;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  margin-left: 10px;
+}
+
+.revision-button {
+  background-color: #ffc107; /* A warning yellow */
+  color: #212529;
+}
+.revision-button:hover {
+  background-color: #e0a800;
+}

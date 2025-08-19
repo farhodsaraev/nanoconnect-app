@@ -1,0 +1,82 @@
+.catalog-page {
+  display: flex;
+  gap: 30px;
+  padding: 40px;
+  background-color: #f8f9fa; /* A light background for the whole page */
+  min-height: calc(100vh - 80px); /* Full height minus padding */
+}
+
+.filter-sidebar {
+  width: 280px;
+  flex-shrink: 0; /* Prevent the sidebar from shrinking */
+  background: #fff;
+  padding: 25px;
+  border-radius: 8px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+  height: fit-content; /* Make the sidebar only as tall as its content */
+}
+
+.filter-sidebar h2 {
+  margin-top: 0;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 15px;
+}
+
+.filter-group {
+  margin-bottom: 20px;
+}
+
+.filter-group label {
+  font-weight: 600;
+  display: block;
+  margin-bottom: 8px;
+}
+
+.filter-group input,
+.filter-group select {
+  width: 100%;
+  padding: 10px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+}
+
+.follower-range {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.results-area {
+  flex-grow: 1; /* Allow the results to take up the remaining space */
+}
+
+.results-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 25px;
+}
+
+/* We can reuse the influencer card styles from the Match Page */
+.influencer-card {
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+  transition: all 0.2s ease-in-out;
+}
+.influencer-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+.influencer-card h3 { margin-top: 0; }
+.influencer-card .niche-tag {
+    background-color: #e83e8c;
+    color: white;
+    padding: 4px 10px;
+    border-radius: 15px;
+    font-size: 0.8rem;
+    display: inline-block;
+    margin-bottom: 10px;
+}
+.influencer-card .stats { font-weight: 500; }

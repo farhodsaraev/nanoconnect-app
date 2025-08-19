@@ -1,0 +1,101 @@
+/* This is the main overlay for the wizard */
+.create-campaign-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.6);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+/* This is the main white container for the form content */
+.create-campaign-form {
+  background: white;
+  padding: 0; /* Remove padding to allow full control by inner content */
+  border-radius: 12px;
+  width: 100%;
+  max-width: 600px;
+  box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+  display: flex;
+  flex-direction: column;
+}
+
+/* --- The Header and Step Indicator --- */
+.wizard-header {
+  padding: 20px 30px;
+  border-bottom: 1px solid #eee;
+}
+
+.wizard-header h2 {
+  margin: 0;
+  margin-bottom: 15px;
+  font-size: 1.5rem;
+}
+
+.step-indicator {
+  display: flex;
+  justify-content: space-around;
+  gap: 10px;
+}
+
+.step {
+  flex: 1;
+  text-align: center;
+  padding: 10px 0;
+  border-bottom: 4px solid #e9ecef;
+  color: #adb5bd;
+  font-weight: 600;
+  transition: all 0.3s;
+}
+
+/* Style for the currently active step */
+.step.active {
+  color: #007bff;
+  border-bottom-color: #007bff;
+}
+
+/* --- The Main Content Area --- */
+.wizard-content {
+  padding: 30px 40px;
+  min-height: 250px; /* Give it a consistent height */
+}
+
+/* --- The Footer and Navigation Buttons --- */
+.wizard-actions {
+  display: flex;
+  justify-content: space-between; /* Pushes buttons to opposite ends */
+  padding: 20px 30px;
+  background-color: #f8f9fa;
+  border-top: 1px solid #eee;
+  border-bottom-left-radius: 12px;
+  border-bottom-right-radius: 12px;
+}
+
+.wizard-actions button {
+  padding: 12px 25px;
+  border: none;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+/* --- Individual Button Styles --- */
+.wizard-button-prev {
+  background-color: #6c757d;
+  color: white;
+}
+
+.wizard-button-next {
+  background-color: #007bff;
+  color: white;
+}
+
+.wizard-button-submit {
+  background-color: #28a745;
+  color: white;
+}
