@@ -6,17 +6,24 @@ import ApiErrorMessage from './ApiErrorMessage';
 import SubmitContent from './SubmitContent'; // We still need this for the modal
 
 // A new helper component to render the correct status and actions for each project
-const ProjectStatus = ({ project, onAccept, onDecline, onOpenSubmit }) => {
-  // --- This component acts as a "logic center" for the UI ---
+// --- Replace the entire ProjectStatus component with this corrected version ---
 
+const ProjectStatus = ({ project, onAccept, onDecline, onOpenSubmit }) => {
   // Case 1: The project is a direct invitation that is still pending
   if (project.type === 'invitation' && project.status === 'pending') {
+    // Get the raw ID from the project_id string (e.g., "invite_1" -> "1")
+    const inviteId = project.project_id.split('_')[1];
     return (
       <div className="project-status">
         <span className="status-tag status-pending">New Invitation!</span>
         <div className="invitation-actions">
-          <button className="decline-button" onClick={() => onDecline(project.project_id.split('_')[1])}>Decline</button>
-          <button className="accept-button" onClick={() => onAccept(project.project_id.split('_')[1])}>Accept</button>
+          {/* --- THIS IS THE FIX --- */}
+          {/* We now pass the string 'declined' as the second argument */}
+          <button className="decline-button" onClick={() => onDecline(inviteId, 'declined')}>Decline</button>
+          
+          {/* --- THIS IS THE FIX --- */}
+          {/* We now pass the string 'accepted' as the second argument */}
+          <button className="accept-button" onClick={() => onAccept(inviteId, 'accepted')}>Accept</button>
         </div>
       </div>
     );
@@ -57,7 +64,6 @@ const ProjectStatus = ({ project, onAccept, onDecline, onOpenSubmit }) => {
     return (
       <div className="project-status">
         <span className="status-tag status-declined">Revision Requested</span>
-        {/* We can add a "Re-submit" button here in the future */}
       </div>
     );
   }

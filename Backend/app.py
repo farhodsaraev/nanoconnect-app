@@ -9,7 +9,9 @@ load_dotenv()
 
 # --- DATABASE SETUP ---
 app = Flask(__name__)
-CORS(app)
+# This explicitly tells the server that for any route starting with /api/,
+# it should accept requests from any origin (*), allowing all standard methods.
+CORS(app, resources={r"/api/*": {"origins": "*"}})
 
 # Read the database URL from the environment variable
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL')
