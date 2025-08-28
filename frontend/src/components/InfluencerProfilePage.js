@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import toast from 'react-hot-toast';
@@ -10,33 +11,40 @@ function InfluencerProfilePage({ user }) {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Fetch the influencer's profile data when the component loads
   useEffect(() => {
-    if (!user) return; // Don't fetch if the user object isn't available yet
+    if (!user) return;
     setIsLoading(true);
-    fetch(`http://localhost:5000/api/influencer/profile?id=${user.id}`)
-      .then(res => res.ok ? res.json() : Promise.reject('Failed to load profile.'))
+    fetch(`${process.env.REACT_APP_API_BASE_URL}/api/influencer/profile?id=${user.id}`)
+      .then(res => {
+        // --- THIS IS THE IMPROVEMENT ---
+        // We check for the 404 error specifically to give a better message.
+        if (res.status === 404) {
+          throw new Error('Your user profile was not found. Please try logging out and back in.');
+        }
+        if (!res.ok) {
+          throw new Error('Failed to load profile due to a server error.');
+        }
+        return res.json();
+      })
       .then(data => {
         setProfileData(data);
         setIsLoading(false);
       })
       .catch(err => {
-        setError(err.message || err);
+        setError(err.message);
         setIsLoading(false);
       });
   }, [user]);
 
-  // Handle changes in the form inputs
+  // The rest of the file (handleChange, handleSubmit, and the return statement) remains the same.
+  // ... (copy the rest of your existing file here)
   const handleChange = (e) => {
     setProfileData({ ...profileData, [e.target.name]: e.target.value });
   };
-
-  // Handle the form submission
   const handleSubmit = (e) => {
     e.preventDefault();
     toast.promise(
-      // The promise is the fetch call to our new PUT endpoint
-      fetch(`http://localhost:5000/api/influencer/profile?id=${user.id}`, {
+      fetch(`${process.env.REACT_APP_API_BASE_URL}/api/influencer/profile?id=${user.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(profileData),
@@ -44,7 +52,6 @@ function InfluencerProfilePage({ user }) {
         if (!res.ok) throw new Error('Update failed!');
         return res.json();
       }),
-      // The object defines the messages for each state of the promise
       {
         loading: 'Saving profile...',
         success: <b>Profile saved successfully!</b>,
@@ -52,11 +59,9 @@ function InfluencerProfilePage({ user }) {
       }
     );
   };
-
   if (isLoading) return <LoadingSpinner />;
   if (error) return <ApiErrorMessage error={error} />;
   if (!profileData) return <p>Could not load profile data.</p>;
-
   return (
     <div className="profile-page">
       <Link to="/influencer/dashboard" className="back-button" style={{ marginBottom: '20px' }}>
@@ -86,7 +91,7 @@ function InfluencerProfilePage({ user }) {
           </div>
           <div className="input-group">
             <label htmlFor="location">Location</label>
-            <input type="text" id="location" name="location" value={profileData.location} onChange={handleChange} />
+            <input type="text" id="location" name="location" value={profileData.location || ''} onChange={handleChange} />
           </div>
            <div className="input-group">
             <label htmlFor="engagement_rate">Engagement Rate (%)</label>
@@ -97,16 +102,14 @@ function InfluencerProfilePage({ user }) {
             <input type="text" id="audience_age_range" name="audience_age_range" value={profileData.audience_age_range || ''} onChange={handleChange} placeholder="e.g., 25-34" />
           </div>
         </div>
-        {/* Fields that aren't in the grid */}
         <div className="input-group">
             <label htmlFor="keywords">Keywords (comma-separated)</label>
-            <input type="text" id="keywords" name="keywords" value={profileData.keywords} onChange={handleChange} placeholder="food, coffee, tacos..." />
+            <input type="text" id="keywords" name="keywords" value={profileData.keywords || ''} onChange={handleChange} placeholder="food, coffee, tacos..." />
         </div>
          <div className="input-group">
             <label htmlFor="audience_gender_split">Audience Gender Split</label>
             <input type="text" id="audience_gender_split" name="audience_gender_split" value={profileData.audience_gender_split || ''} onChange={handleChange} placeholder="e.g., 60% Female, 40% Male" />
         </div>
-
         <div className="form-actions-profile">
           <button type="submit" className="save-button">Save Changes</button>
         </div>
@@ -114,5 +117,4 @@ function InfluencerProfilePage({ user }) {
     </div>
   );
 }
-
 export default InfluencerProfilePage;

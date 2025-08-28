@@ -1,45 +1,28 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import './Dashboard.css'; // We'll continue using these styles
+import './Dashboard.css';
 import LoadingSpinner from './LoadingSpinner';
 import ApiErrorMessage from './ApiErrorMessage';
-import SubmitContent from './SubmitContent'; // We still need this for the modal
+import SubmitContent from './SubmitContent';
 
-// A new helper component to render the correct status and actions for each project
-// --- Replace the entire ProjectStatus component with this corrected version ---
-
+// The ProjectStatus helper component remains unchanged
 const ProjectStatus = ({ project, onAccept, onDecline, onOpenSubmit }) => {
-  // Case 1: The project is a direct invitation that is still pending
   if (project.type === 'invitation' && project.status === 'pending') {
-    // Get the raw ID from the project_id string (e.g., "invite_1" -> "1")
     const inviteId = project.project_id.split('_')[1];
     return (
       <div className="project-status">
         <span className="status-tag status-pending">New Invitation!</span>
         <div className="invitation-actions">
-          {/* --- THIS IS THE FIX --- */}
-          {/* We now pass the string 'declined' as the second argument */}
           <button className="decline-button" onClick={() => onDecline(inviteId, 'declined')}>Decline</button>
-          
-          {/* --- THIS IS THE FIX --- */}
-          {/* We now pass the string 'accepted' as the second argument */}
           <button className="accept-button" onClick={() => onAccept(inviteId, 'accepted')}>Accept</button>
         </div>
       </div>
     );
   }
-
-  // Case 2: The project is an application the influencer submitted
   if (project.type === 'application') {
     const statusText = `Application ${project.status}`;
-    return (
-      <div className="project-status">
-        <span className={`status-tag status-${project.status}`}>{statusText}</span>
-      </div>
-    );
+    return <div className="project-status"><span className={`status-tag status-${project.status}`}>{statusText}</span></div>;
   }
-
-  // Case 3: The project has been accepted and is awaiting content submission
   if (project.status === 'accepted' && !project.submission_status) {
     return (
       <div className="project-status">
@@ -48,67 +31,80 @@ const ProjectStatus = ({ project, onAccept, onDecline, onOpenSubmit }) => {
       </div>
     );
   }
-
-  // Case 4: Content has been submitted and is awaiting review by the brand
   if (project.submission_status === 'pending_review') {
     return <div className="project-status"><span className="status-tag status-pending">Content Under Review</span></div>;
   }
-  
-  // Case 5: The brand has approved the content!
   if (project.submission_status === 'approved') {
     return <div className="project-status"><span className="status-tag status-accepted">Project Complete! 🎉</span></div>;
   }
-
-  // Case 6: The brand has requested revisions
   if (project.submission_status === 'revision_requested') {
-    return (
-      <div className="project-status">
-        <span className="status-tag status-declined">Revision Requested</span>
-      </div>
-    );
+    return <div className="project-status"><span className="status-tag status-declined">Revision Requested</span></div>;
   }
-
-  // Fallback for any other state
   return <div className="project-status"><span className="status-tag">{project.status}</span></div>;
 };
+
 
 function InfluencerDashboard({ user, onLogout }) {
   const [projects, setProjects] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const [submittingProject, setSubmittingProject] = useState(null);
+  
+  // --- CHANGE 1: ADD NEW STATE FOR THE BANNER ---
+  // This state will control the visibility of our "profile incomplete" banner.
+  const [isProfileIncomplete, setIsProfileIncomplete] = useState(false);
 
-  // Function to fetch all project data from our new endpoint
-  const fetchProjects = () => {
+  // This function fetches all data needed for the dashboard. It will now be inside the useEffect hook.
+  const fetchDashboardData = () => {
     if (!user) return;
     setIsLoading(true);
-    fetch(`${process.env.REACT_APP_API_BASE_URL}/api/influencer/${user.id}/projects`)
-      .then(res => res.ok ? res.json() : Promise.reject('Failed to load projects.'))
-      .then(data => {
-        setProjects(data);
-        setIsLoading(false);
+
+    // We define two separate API calls as promises.
+    const projectsPromise = fetch(`${process.env.REACT_APP_API_BASE_URL}/api/influencer/${user.id}/projects`).then(res => res.json());
+    const profilePromise = fetch(`${process.env.REACT_APP_API_BASE_URL}/api/influencer/profile?id=${user.id}`).then(res => res.json());
+
+    // Promise.all runs both promises and waits for them both to finish.
+    Promise.all([projectsPromise, profilePromise])
+      .then(([projectsData, profileData]) => {
+        // This part runs only after both API calls have succeeded.
+        setProjects(projectsData);
+        
+        // --- CHANGE 2: THE NEW LOGIC TO CHECK THE PROFILE ---
+        // The banner will show if the niche OR keywords are empty/null.
+        if (!profileData.niche || !profileData.keywords) {
+          setIsProfileIncomplete(true);
+        } else {
+          setIsProfileIncomplete(false);
+        }
       })
       .catch(err => {
-        setError(err.message || err);
+        setError(err.message || 'Failed to load dashboard data.');
+      })
+      .finally(() => {
         setIsLoading(false);
       });
   };
 
-  // Fetch data on initial load
-  useEffect(fetchProjects, [user]);
+  // This useEffect hook now simply calls our main data fetching function.
+  useEffect(fetchDashboardData, [user]);
 
   const handleInvitationResponse = (inviteId, status) => {
-    // ... (this function can remain the same, but we will refresh the list after)
     fetch(`${process.env.REACT_APP_API_BASE_URL}/api/invites/${inviteId}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ status: status }),
-    }).then(res => res.ok ? fetchProjects() : Promise.reject('Update failed.')); // Refresh list on success
+    }).then(res => {
+      if (res.ok) {
+        fetchDashboardData(); // Refresh all data on success
+      } else {
+        Promise.reject('Update failed.');
+      }
+    });
   };
   
   const handleContentSubmitted = () => {
     setSubmittingProject(null); // Close the modal
-    fetchProjects(); // Refresh the entire project list to show the new "Under Review" status
+    fetchDashboardData(); // Refresh all data to show the new "Under Review" status
   };
 
   if (isLoading) return <LoadingSpinner />;
@@ -125,6 +121,16 @@ function InfluencerDashboard({ user, onLogout }) {
         </div>
       </header>
       <main className="campaign-list-container">
+
+        {/* --- CHANGE 3: THE NEW BANNER UI --- */}
+        {/* This banner will only appear if the isProfileIncomplete state is true. */}
+        {isProfileIncomplete && (
+          <div className="profile-incomplete-banner">
+            Your profile is incomplete! Add your niche and keywords to get discovered by brands. 
+            <Link to="/influencer/profile"> Complete Your Profile Now</Link>.
+          </div>
+        )}
+
         <h2>My Projects</h2>
         <div className="campaign-list">
           {projects.length > 0 ? projects.map(p => (

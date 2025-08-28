@@ -38,28 +38,27 @@ class BrandUser(db.Model):
         # Checks if the provided password matches the stored hash
         return check_password_hash(self.password_hash, password)
 
-class Influencer(db.Model):
-    """
-    Model for influencer users who participate in campaigns
-    Contains profile information and audience demographics
-    """
-    id = db.Column(db.Integer, primary_key=True)
-    email = db.Column(db.String(120), unique=True, nullable=False) # Unique login identifier
-    password_hash = db.Column(db.String(256)) # Hashed
-    name = db.Column(db.String(80), nullable=False) # Display name for the influencer
-    followers = db.Column(db.Integer, nullable=False) # Social media follower count
-    location = db.Column(db.String(80), nullable=False) # Geographic location for targeting
-    keywords = db.Column(db.String(200), nullable=False) # e.g., "food,coffee,restaurants"
-    
-    # The primary niche the influencer identifies with.
-    niche = db.Column(db.String(80), nullable=True) # e.g., "Food & Drink"
-    # The influencer's calculated engagement rate.
-    engagement_rate = db.Column(db.Float, nullable=True)
-    # A description of the influencer's primary audience.
-    audience_age_range = db.Column(db.String(50), nullable=True) # e.g., "25-34"
-    # The gender split of the audience.
-    audience_gender_split = db.Column(db.String(50), nullable=True) # e.g., "60% Female, 40% Male"
+# --- Find and replace the entire Influencer model class ---
 
+class Influencer(db.Model):
+    # This part remains the same
+    id = db.Column(db.Integer, primary_key=True)
+    email = db.Column(db.String(120), unique=True, nullable=False)
+    password_hash = db.Column(db.String(256))
+    name = db.Column(db.String(80), nullable=False)
+    
+    # --- THESE ARE THE CHANGES ---
+    # We make these fields optional (nullable=True) so a new user can be created
+    # without this information. We also remove nullable=False where it's not needed.
+    followers = db.Column(db.Integer, nullable=True, default=0) # Now optional, defaults to 0
+    location = db.Column(db.String(80), nullable=True)
+    keywords = db.Column(db.String(200), nullable=True)
+    niche = db.Column(db.String(80), nullable=True)
+    engagement_rate = db.Column(db.Float, nullable=True)
+    audience_age_range = db.Column(db.String(50), nullable=True)
+    audience_gender_split = db.Column(db.String(50), nullable=True)
+
+    # The password methods remain the same
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
 
@@ -227,7 +226,6 @@ def find_matches(campaign_id):
         return jsonify({"error": "This campaign has no target location specified."}), 400
 
     # --- Step 2: Normalize the Campaign Brief Keywords ---
-    # This is our new, more robust text cleaning process.
     import string
     # First, remove all punctuation from the brief (e.g., "coffee." becomes "coffee")
     translator = str.maketrans('', '', string.punctuation)
@@ -236,32 +234,32 @@ def find_matches(campaign_id):
     campaign_keywords = set(clean_brief.split())
 
     # --- Step 3: Find All Potential Influencers ---
-    all_influencers = Influencer.query.filter(Influencer.location.ilike(target_location)).all()
+    all_influencers = Influencer.query.filter(Influencer.location.ilike(f'%{target_location}%')).all()
 
     # --- Step 4: Score Each Influencer ---
     matches = []
     for influencer in all_influencers:
-        # Normalize the influencer's keywords by splitting AND stripping whitespace.
-        # This turns "food, coffee, restaurants" into {'food', 'coffee', 'restaurants'}
-        influencer_keywords = {kw.strip() for kw in influencer.keywords.lower().split(',')}
-        
-        # Calculate the score based on the intersection of the two sets.
-        common_keywords = campaign_keywords.intersection(influencer_keywords)
-        score = len(common_keywords)
+        if influencer.keywords:
+                
+            influencer_keywords = {kw.strip() for kw in influencer.keywords.lower().split(',')}
+            
+            # Calculate the score based on the intersection of the two sets.
+            common_keywords = campaign_keywords.intersection(influencer_keywords)
+            score = len(common_keywords)
 
-        # Only include influencers who have at least one matching keyword.
-        if score > 0:
-            # Prepare the influencer data to be sent to the frontend.
-            influencer_data = {
-                "id": influencer.id, 
-                "name": influencer.name, 
-                "followers": influencer.followers,
-                "location": influencer.location, 
-                "niche": influencer.niche,
-                "engagement_rate": influencer.engagement_rate,
-                "keywords": [kw.strip() for kw in influencer.keywords.split(',')] # Send as a clean list
-            }
-            matches.append({"influencer": influencer_data, "match_score": score})
+            # Only include influencers who have at least one matching keyword.
+            if score > 0:
+                # Prepare the influencer data to be sent to the frontend.
+                influencer_data = {
+                    "id": influencer.id, 
+                    "name": influencer.name, 
+                    "followers": influencer.followers,
+                    "location": influencer.location, 
+                    "niche": influencer.niche,
+                    "engagement_rate": influencer.engagement_rate,
+                    "keywords": [kw.strip() for kw in influencer.keywords.split(',')] # Send as a clean list
+                }
+                matches.append({"influencer": influencer_data, "match_score": score})
     
     # Sort the results from highest score to lowest.
     sorted_matches = sorted(matches, key=lambda x: x['match_score'], reverse=True)
@@ -277,23 +275,6 @@ def create_invite():
     db.session.add(new_invite)
     db.session.commit()
     return jsonify({"message": "Invitation sent successfully!", "invite_id": new_invite.id}), 201
-
-
-# @app.route('/api/influencer/login', methods=['POST'])
-# def influencer_login():
-#     data = request.get_json()
-#     email = data.get('email')
-#     password = data.get('password')
-
-#     # Step 1: Find the influencer by their unique email.
-#     user = Influencer.query.filter_by(email=email).first()
-
-#     # Step 2: Check if a user was found AND if their password matches.
-#     if user and user.password == password:
-#         user_data = {"id": user.id, "email": user.email, "profile_id": user.id}
-#         return jsonify({"message": "Login successful!", "user": user_data})
-#     else:
-#         return jsonify({"error": "Invalid credentials"}), 401
 
 
 @app.route('/api/influencer/profile', methods=['GET'])
@@ -640,6 +621,8 @@ def register_brand():
 
 # --- Find and replace this entire function ---
 
+# --- Find and replace the entire register_influencer function ---
+
 @app.route('/api/influencer/register', methods=['POST'])
 def register_influencer():
     data = request.get_json()
@@ -650,14 +633,11 @@ def register_influencer():
     if Influencer.query.filter_by(email=email).first():
         return jsonify({"error": "An account with this email already exists."}), 409
 
-    # We now provide default values for all the "not-null" fields.
-    new_influencer = Influencer(
-        email=email, 
-        name=name,
-        followers=0, # Default to 0 followers
-        location='Not Set', # Provide a default string
-        keywords='new user, profile not updated' # Provide default keywords
-    )
+    # --- THIS IS THE CHANGE ---
+    # We now only provide the absolutely required fields: email and name.
+    # The database will automatically handle the optional fields as NULL.
+    new_influencer = Influencer(email=email, name=name)
+    
     new_influencer.set_password(password)
     db.session.add(new_influencer)
     db.session.commit()

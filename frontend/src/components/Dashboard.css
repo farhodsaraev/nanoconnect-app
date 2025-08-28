@@ -195,3 +195,20 @@
   border-radius: 15px;
   font-size: 0.9rem;
 }
+
+/* --- Styles for Profile Completion Banner --- */
+.profile-incomplete-banner {
+  background-color: #fff3cd; /* A light, attention-grabbing yellow */
+  border: 1px solid #ffeeba;
+  color: #856404;
+  padding: 15px 20px;
+  border-radius: 8px;
+  margin-bottom: 25px;
+  text-align: center;
+}
+
+.profile-incomplete-banner a {
+  font-weight: bold;
+  color: #856404;
+  text-decoration: underline;
+}
